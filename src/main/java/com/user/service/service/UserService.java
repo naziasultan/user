@@ -1,38 +1,41 @@
 package com.user.service.service;
 
-import com.user.service.model.User;
-import org.springframework.http.ResponseEntity;
+import com.user.service.repo.User;
+import com.user.service.repo.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
-    Map<Long, User> mapUser= new HashMap<>();
+    @Autowired
+    UserRepository repository;
 
-    public User getUser(Long id){
-       return mapUser.get(id);
+    public Optional<User> getUser(Long id){
+       return repository.findById(id);
     }
-    public User createUser(User user){
-         User.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .amountOfPosts(user.getAmountOfPosts())
-                .build();
-        mapUser.put(user.getId(), user);
-        return user;
+    public User createUser(com.user.service.model.User user){
+        User newUser = new User();
+        newUser.setId(user.getId());
+        newUser.setUsername(user.getUsername());
+        newUser.setAmountOfPosts(user.getAmountOfPosts());
+        repository.save(newUser);
+        return newUser;
     }
     public void deleteUser(Long id){
-        mapUser.remove(id);
+      repository.deleteById(id);
+
     }
 
-    public User updateUser(Long id){
-        User user = mapUser.get(id);
-        user.setId(id);
-        mapUser.put(id, user);
-        return user;
+    public Optional<User> updateUser(Long id){
+        Optional<User> updatedUser = repository.findById(id);
+
+        if(updatedUser.isPresent()) {
+            Integer i = Integer.valueOf(updatedUser.get().getAmountOfPosts()) + 1;
+            updatedUser.get().setAmountOfPosts(String.valueOf(i));
+        }
+        return updatedUser;
     }
 }

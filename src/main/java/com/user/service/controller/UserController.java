@@ -4,9 +4,13 @@ import com.user.service.model.User;
 import com.user.service.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @Slf4j
 @Validated
@@ -20,26 +24,32 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<User> getUser(@PathVariable("id") Long id) {
-        User response =  userService.getUser(id);
-        return ResponseEntity.ok(response);
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Optional<com.user.service.repo.User>> getUser(@PathVariable("id") Long id) {
+        Optional<com.user.service.repo.User> response =  userService.getUser(id);
+        if (response!=null)
+            return ResponseEntity.ok(response);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
-    public ResponseEntity<String> createUser(User user) {
-         userService.createUser(user);
-        return ResponseEntity.ok("Created");
+    public ResponseEntity<com.user.service.repo.User > createUser(@RequestBody User user) {
+        com.user.service.repo.User response= userService.createUser(user);
+       if(response !=null )
+           return ResponseEntity.ok(response);
+       else
+           return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable("id") Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("Deleted");
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteUser(@PathVariable("id") Long id) {
+       userService.deleteUser(id);
+
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userService.updateUser(id));
+    @RequestMapping(value ="/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE , consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<com.user.service.repo.User> updateUser(@PathVariable("id") Long id) {
+        return userService.updateUser(id);
     }
 }
