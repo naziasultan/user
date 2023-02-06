@@ -1,9 +1,11 @@
 package com.user.service.controller;
 
+import com.user.service.model.ResponseDTO;
 import com.user.service.model.User;
 import com.user.service.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+    @Value("${test-properties.version}")
+    private Integer version;
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Optional<com.user.service.repo.User>> getUser(@PathVariable("id") Long id) {
@@ -51,5 +55,13 @@ public class UserController {
     @RequestMapping(value ="/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE , consumes = MediaType.APPLICATION_JSON_VALUE)
     public Optional<com.user.service.repo.User> updateUser(@PathVariable("id") Long id) {
         return userService.updateUser(id);
+    }
+
+
+    @GetMapping ("/health")
+    public ResponseEntity<ResponseDTO> healthCheck() {
+        var responseDto = new ResponseDTO();
+        responseDto.setVersion(version);
+        return ResponseEntity.ok(responseDto);
     }
 }
